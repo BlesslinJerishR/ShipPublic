@@ -1,0 +1,114 @@
+Build me ShipPublic /dashboard working MVP
+
+About Ship Public Project : 
+.git commits, diffs, commit messages automatically turned into build in public posts.
+
+A fully local automation tool that converts your Git commits and code changes into clean, engaging “build in public” updates.
+
+It analyzes diffs, understands what changed and why, and generates ready-to-post content for platforms like LinkedIn or Twitter. No cloud. No API costs. Just your machine doing the thinking.
+
+What it actually does
+- Tracks your Git commits and diffs
+- Understands changes like a developer, not a log parser
+- Generates human-friendly updates (not boring changelogs)
+- Automates your build-in-public workflow
+- Runs completely offline using local LLMs (Ollama)
+- The problem it solves
+
+Most devs:
+
+- ship quietly
+- forget to post updates
+- or write dull “fixed bug, added feature” posts 
+
+Your tool turns that into:
+
+clear, engaging progress updates… automatically
+
+Value in one line
+
+“Turn your commits into content without lifting a finger.”
+
+Who it’s for
+- Indie hackers building in public
+- Developers who hate writing posts
+- Busy Founders documenting progress
+- Open-source shippers
+
+Why it’s different
+- No API costs (runs locally)
+- Understands code diffs, not just commit messages
+- Produces story-style updates, not logs
+- Fits perfectly into a dev workflow (Git-based trigger)
+
+Working Implementation : It should have
+
+- Github OAuth
+- github integration of project selection
+- Fetch and Analyze my commit messages and file diffs via git
+- calendar view render of my github calender and
+- a seprate calendar for posts creation
+- Old git commoits selection too
+- Range of git selections
+- Automatic post generation for Build in Public
+- ollama integration
+- To analyze code diffs and commit message use the ollama model 
+qwen2.5-coder:32b → for structured summary 
+qwen3.6:27b → final social post
+- cron + Git hooks (have an auto sync toggle button - if enabled for certain project , once push it should trigger the flow and auto create build in public post)
+
+
+Hybrid strategy (THIS is the real pro move)
+
+Use two models in pipeline:
+
+Coder model → understand diff (brain)
+Chat model → polish post (post text (voice))
+
+Prompt structure (important) (improvise as much as needed and improvise accordingly)
+
+Feed it like this (don’t just dump diff blindly):
+
+You are a developer writing a "build in public" update.
+
+Summarize the following git diff:
+- What changed
+- Why it matters
+- Keep it simple
+
+Then convert it into:
+- 1 short LinkedIn/Twitter style post
+- Slightly engaging tone, not cringe
+
+Git diff:
+<PASTE DIFF>
+
+Ollama tuning for your PC
+
+Run with GPU assist:
+
+OLLAMA_NUM_GPU=1 ollama run qwen2.5-coder:32b
+
+OLLAMA_MAX_LOADED_MODELS=1
+
+FLOW : git commit message + git diff → qwen2.5-coder:32b → structured summary → qwen3.6:27b → final social post
+
+Important : It is an open source AGPL v3.0 locally run project for now. we will monetize and cloud it later with Cloud APIs
+
+all latest version only (Important)
+
+Frontend : NextJS + Typescript (both latest version only (Important))
+
+No TailwindCSS (Important). use only CSS Modules
+
+Don't use emojis or hiphen or underscore , - ,  _ anywhere in the frontend.
+
+Use only Lucide icons (Important).
+
+Backend : NestJS + Typescript + Fastify adapter + Prisma (all latest version only (Important))
+
+DB : Postgresql
+
+Optimization, Caching, Queues:  Redis + BullMQ
+
+make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly. make it as an enterprise grade level application. Implement
