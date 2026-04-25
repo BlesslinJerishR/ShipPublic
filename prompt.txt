@@ -175,3 +175,4 @@ projects
 4. Check box Ui wrong for signature fix it. make it clean and minimalistic. Bug screenshot attached. make a custom check box in red color too
 5. Apply button is now fixed. but now Project section ui/ux got problem. its not in correct responsiveness. fix. screenshot attached. its on wrong layout and showing x axis scroll. fix
 
+Analyze my project and check whether it analyzes file changes, files diff etc and pass that to LLMs ? enlighten me
