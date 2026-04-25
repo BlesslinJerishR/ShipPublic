@@ -1,4 +1,4 @@
-// ShipPublic database schema
+// Shipublic database schema
 generator client {
   provider = "prisma-client-js"
 }

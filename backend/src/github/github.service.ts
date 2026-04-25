@@ -35,7 +35,7 @@ export class GithubService {
   private readonly logger = new Logger(GithubService.name);
 
   client(token: string) {
-    return new Octokit({ auth: token, userAgent: 'ShipPublic/0.1' });
+    return new Octokit({ auth: token, userAgent: 'Shipublic/0.1' });
   }
 
   async listRepos(token: string): Promise<RepoSummary[]> {

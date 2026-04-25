@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
-export const COOKIE_NAME = process.env.COOKIE_NAME || 'shippublic_session';
+export const COOKIE_NAME = process.env.COOKIE_NAME || 'shipublic_session';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

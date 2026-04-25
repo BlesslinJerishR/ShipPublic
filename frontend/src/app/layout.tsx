@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { ThemeProvider } from '@/lib/theme';
 
 export const metadata: Metadata = {
-  title: 'ShipPublic',
+  title: 'Shipublic',
   description: 'Turn your commits into build in public posts. Locally.',
 };
 

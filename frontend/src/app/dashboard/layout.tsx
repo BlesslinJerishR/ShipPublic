@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className={styles.shell}>
       <aside className={styles.side}>
         <div className={styles.brand}>
-          <span className={styles.brandDot} /> ShipPublic
+          <span className={styles.brandDot} /> Shipublic
         </div>
 
         <div>

@@ -17,7 +17,7 @@ export default function Landing() {
         {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
       </button>
 
-      <div className={styles.brand}>ShipPublic</div>
+      <div className={styles.brand}>Shipublic</div>
       <h1 className={styles.title}>
         Turn your commits into <span className={styles.titleAccent}>build in public</span> posts.
       </h1>

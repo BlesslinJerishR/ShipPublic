@@ -1,4 +1,4 @@
-Build me ShipPublic /dashboard working MVP
+Build me Shipublic /dashboard working MVP
 
 About Ship Public Project : 
 .git commits, diffs, commit messages automatically turned into build in public posts.

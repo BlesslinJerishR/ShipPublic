@@ -15,7 +15,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark');
 
   useEffect(() => {
-    const stored = (typeof window !== 'undefined' && localStorage.getItem('shippublic.theme')) as Theme | null;
+    const stored = (typeof window !== 'undefined' && localStorage.getItem('shipublic.theme')) as Theme | null;
     const initial: Theme = stored === 'light' ? 'light' : 'dark';
     setThemeState(initial);
     document.documentElement.dataset.theme = initial;
@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     document.documentElement.dataset.theme = t;
-    localStorage.setItem('shippublic.theme', t);
+    localStorage.setItem('shipublic.theme', t);
   }, []);
 
   const toggle = useCallback(() => {

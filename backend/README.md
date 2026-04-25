@@ -1,4 +1,4 @@
-# ShipPublic Backend
+# Shipublic Backend
 
 NestJS 11 with Fastify, Prisma 6, BullMQ, GitHub OAuth, Ollama integration.
 

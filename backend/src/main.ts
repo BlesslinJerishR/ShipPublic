@@ -57,7 +57,7 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT || 4000);
   await app.listen(port, '0.0.0.0');
-  new Logger('Bootstrap').log(`ShipPublic API listening on :${port}`);
+  new Logger('Bootstrap').log(`Shipublic API listening on :${port}`);
 }
 
 bootstrap().catch((err) => {

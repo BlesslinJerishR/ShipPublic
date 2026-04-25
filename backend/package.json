@@ -1,7 +1,7 @@
 {
-  "name": "shippublic-backend",
+  "name": "shipublic-backend",
   "version": "0.1.0",
-  "description": "ShipPublic backend: NestJS + Fastify + Prisma + BullMQ",
+  "description": "Shipublic backend: NestJS + Fastify + Prisma + BullMQ",
   "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {

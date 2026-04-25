@@ -1,4 +1,4 @@
-# ShipPublic Frontend
+# Shipublic Frontend
 
 Next.js 15 (App Router) with TypeScript and CSS Modules. Lucide icons only.
 

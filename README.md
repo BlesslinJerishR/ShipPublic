@@ -1,4 +1,4 @@
-# ShipPublic
+# Shipublic
 .git commits, diffs, commit messages automatically turned into build in public posts.
 
 A fully local automation tool that converts your Git commits and code changes into clean, engaging "build in public" updates.
