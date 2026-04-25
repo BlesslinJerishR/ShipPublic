@@ -62,45 +62,43 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      <div className={styles.grid}>
-        <Card title="Your GitHub activity">
-          {primaryProjectId ? (
-            <ContributionGraph projectId={primaryProjectId} />
-          ) : (
-            <div className={styles.muted}>Add a project to see contributions.</div>
-          )}
-        </Card>
-
-        <Card
-          title="Recent posts"
-          action={
-            <Link href="/dashboard/posts">
-              <button>View all</button>
-            </Link>
-          }
-        >
-          {posts.length === 0 && <div className={styles.muted}>No posts yet. Generate one from any project.</div>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {posts.slice(0, 6).map((p) => (
-              <Link key={p.id} href={`/dashboard/posts/${p.id}`}>
-                <div style={{
-                  border: '1px solid rgba(var(--fgRgb), 0.10)',
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                }}>
-                  <div style={{ fontSize: 12, opacity: 0.6, display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{p.platform.toLowerCase()} · {p.status.toLowerCase()}</span>
-                    <span>{new Date(p.createdAt).toLocaleString()}</span>
-                  </div>
-                  <div style={{ marginTop: 4, color: 'var(--fg)' }}>
-                    {p.content?.slice(0, 140) || (p.metadata?.generating ? 'Generating...' : 'Empty draft')}
-                  </div>
+      <Card
+        title="Recent posts"
+        action={
+          <Link href="/dashboard/posts">
+            <button>View all</button>
+          </Link>
+        }
+      >
+        {posts.length === 0 && <div className={styles.muted}>No posts yet. Generate one from any project.</div>}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {posts.slice(0, 6).map((p) => (
+            <Link key={p.id} href={`/dashboard/posts/${p.id}`}>
+              <div style={{
+                border: '1px solid rgba(var(--fgRgb), 0.10)',
+                padding: '10px 12px',
+                borderRadius: 10,
+              }}>
+                <div style={{ fontSize: 12, opacity: 0.6, display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{p.platform.toLowerCase()} · {p.status.toLowerCase()}</span>
+                  <span>{new Date(p.createdAt).toLocaleString()}</span>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </Card>
-      </div>
+                <div style={{ marginTop: 4, color: 'var(--fg)' }}>
+                  {p.content?.slice(0, 140) || (p.metadata?.generating ? 'Generating...' : 'Empty draft')}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Your GitHub activity">
+        {primaryProjectId ? (
+          <ContributionGraph projectId={primaryProjectId} />
+        ) : (
+          <div className={styles.muted}>Add a project to see contributions.</div>
+        )}
+      </Card>
 
       <Card title="Projects">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>

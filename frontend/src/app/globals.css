@@ -71,3 +71,68 @@ input:focus, textarea:focus, select:focus { border-color: var(--hero); }
   border: 1px solid var(--hero);
 }
 .heroBtn:hover { background: var(--hero); filter: brightness(1.08); }
+
+/* Clean minimalistic custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--fgRgb), 0.18) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--fgRgb), 0.18);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--fgRgb), 0.32);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Custom red checkbox - clean & minimalistic */
+input[type="checkbox"].redCheck {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(var(--fgRgb), 0.35);
+  background: transparent;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+  padding: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+}
+input[type="checkbox"].redCheck::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  transform: scale(0);
+  transition: transform 0.12s ease-in-out;
+  background: #fff;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+input[type="checkbox"].redCheck:checked {
+  background: var(--hero);
+  border-color: var(--hero);
+}
+input[type="checkbox"].redCheck:checked::before {
+  transform: scale(1);
+}
+input[type="checkbox"].redCheck:focus-visible {
+  outline: 2px solid rgba(255, 0, 79, 0.4);
+  outline-offset: 2px;
+}

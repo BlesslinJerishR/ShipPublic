@@ -3,6 +3,7 @@
   border: 1px solid rgba(var(--fgRgb), 0.10);
   border-radius: 12px;
   padding: 18px;
+  min-width: 0;
 }
 .cardHeader {
   display: flex;
@@ -10,7 +11,10 @@
   justify-content: space-between;
   margin-bottom: 12px;
   gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
+.cardHeader > div { min-width: 0; }
 .cardTitle {
   font-size: 14px;
   font-weight: 700;

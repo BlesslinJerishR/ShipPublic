@@ -38,7 +38,7 @@ function LoginInner() {
 
   useEffect(() => {
     if (search?.get('demo') !== '1') return;
-    setAutoCountdown(2);
+    setAutoCountdown(8);
     const tick = setInterval(() => {
       setAutoCountdown((c) => {
         if (c === null) return c;
@@ -49,7 +49,7 @@ function LoginInner() {
         }
         return c - 1;
       });
-    }, 700);
+    }, 1000);
     return () => clearInterval(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
@@ -134,7 +134,7 @@ function LoginInner() {
           </div>
           <div className={styles.note}>
             Demo runs entirely in your browser. All actions are read and view
-            only — destructive changes do not persist.
+            only - destructive changes do not persist.
           </div>
         </div>
       </div>

@@ -33,6 +33,7 @@
   color: rgba(var(--fgRgb), 0.5);
   padding: 0 8px;
   margin-top: 8px;
+  padding-bottom: 1rem;
 }
 
 .navItem {
@@ -57,7 +58,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding-bottom: 1rem;
 }
 
 .projectList { display: flex; flex-direction: column; gap: 2px; max-height: 40vh; overflow-y: auto; padding-top: 4px; }

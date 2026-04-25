@@ -20,8 +20,14 @@
 .dot { width: 10px; height: 10px; border-radius: 999px; background: rgba(var(--fgRgb), 0.4); }
 .dotOn { background: var(--hero); }
 
-.grid { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
-@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  min-width: 0;
+}
+.grid > * { min-width: 0; }
+@media (max-width: 1100px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 
 .commitRow {
   display: grid;
@@ -50,7 +56,7 @@
 .checkboxOn { background: var(--hero); border-color: var(--hero); }
 
 .dateRow { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-.field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
-.field input, .field button { height: 38px; box-sizing: border-box; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 130px; }
+.field input, .field button { height: 38px; box-sizing: border-box; width: 100%; }
 .field button { white-space: nowrap; }
 .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.6; }

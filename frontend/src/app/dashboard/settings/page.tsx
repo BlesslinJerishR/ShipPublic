@@ -58,13 +58,24 @@ export default function SettingsPage() {
           fit your voice or disable it entirely.
         </p>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, marginBottom: 10 }}>
+        <label
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            fontSize: 13,
+            marginBottom: 12,
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+        >
           <input
             type="checkbox"
+            className="redCheck"
             checked={enabled}
             onChange={(e) => setEnabled(e.target.checked)}
           />
-          Append signature to every post
+          <span>Append signature to every post</span>
         </label>
 
         <textarea

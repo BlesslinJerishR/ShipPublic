@@ -5,6 +5,8 @@
 /.pnp
 .pnp.js
 
+frontend/.netlify/
+frontend/.next/
 # testing
 /coverage
 
