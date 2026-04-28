@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -13,6 +13,10 @@ import {
   Check,
   ArrowLeft,
   Pencil,
+  Sparkles,
+  Download,
+  Image as ImageIcon,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { Card } from '@/components/Card';
 import { Select } from '@/components/Select';
@@ -24,7 +28,8 @@ import {
   stripSignature,
   type UserSettings,
 } from '@/lib/settings';
-import type { Post } from '@/lib/types';
+import { downloadDataUrl } from '@/lib/gallery-render';
+import type { GalleryImage, Post } from '@/lib/types';
 import styles from './post.module.css';
 
 export default function PostDetail() {
@@ -38,7 +43,11 @@ export default function PostDetail() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [settings, setSettings] = useState<UserSettings>(() => getSettings());
+  const [image, setImage] = useState<GalleryImage | null>(null);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const pollRef = useRef<any>(null);
+  const imagePollRef = useRef<any>(null);
 
   useEffect(() => {
     const off = onSettingsChange((s) => setSettings(s));
@@ -54,23 +63,40 @@ export default function PostDetail() {
     ? appendSignature(content, settings.signature)
     : stripSignature(content, settings.signature);
 
-  const load = async () => {
+  const loadImageForPost = useCallback(async (postId: string) => {
+    try {
+      const list = (await api.gallery.images.list(postId)) as GalleryImage[];
+      setImage(list[0] || null);
+    } catch {
+      /* gallery API unavailable; keep last known state */
+    }
+  }, []);
+
+  const load = useCallback(async () => {
     const p = (await api.posts.get(id)) as Post;
     setPost(p);
-    // Strip any trailing signature so the editor only shows the body.
     setContent(stripSignature(p.content || '', getSettings().signature));
     setPlatform(p.platform);
     setScheduledFor(p.scheduledFor ? p.scheduledFor.substring(0, 16) : '');
     if (p.metadata?.generating) {
       pollRef.current = setTimeout(load, 2500);
+    } else {
+      // Once generation completes, the backend may also be auto-rendering
+      // the build-in-public image. Load whatever is already available, then
+      // poll once shortly after to pick up the freshly-rendered version.
+      loadImageForPost(p.id);
+      if (imagePollRef.current) clearTimeout(imagePollRef.current);
+      imagePollRef.current = setTimeout(() => loadImageForPost(p.id), 2500);
     }
-  };
+  }, [id, loadImageForPost]);
 
   useEffect(() => {
     load();
-    return () => { if (pollRef.current) clearTimeout(pollRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    return () => {
+      if (pollRef.current) clearTimeout(pollRef.current);
+      if (imagePollRef.current) clearTimeout(imagePollRef.current);
+    };
+  }, [load]);
 
   const save = async () => {
     setSaving(true);
@@ -85,9 +111,7 @@ export default function PostDetail() {
   };
 
   const markPublished = async () => {
-    const updated = await api.posts.update(id, {
-      status: 'PUBLISHED',
-    });
+    const updated = await api.posts.update(id, { status: 'PUBLISHED' });
     setPost(updated as Post);
   };
 
@@ -112,9 +136,44 @@ export default function PostDetail() {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const generateImage = useCallback(async () => {
+    setImageBusy(true);
+    setImageError(null);
+    try {
+      const created = (await api.gallery.generate({ postId: id })) as GalleryImage;
+      setImage(created);
+    } catch (err: any) {
+      setImageError(err?.body?.message || err?.message || 'image generation failed');
+    } finally {
+      setImageBusy(false);
+    }
+  }, [id]);
+
+  const downloadImage = useCallback(async () => {
+    if (!image) return;
+    if (image.dataUrl) {
+      downloadDataUrl(image.dataUrl, `shipublic-${image.id}.png`);
+      return;
+    }
+    try {
+      const res = await fetch(api.gallery.images.fileUrl(image.id), {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('fetch failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      downloadDataUrl(url, `shipublic-${image.id}.png`);
+    } catch {
+      alert('Could not download image.');
+    }
+  }, [image]);
+
   if (!post) return <div style={{ opacity: 0.6 }}>Loading post</div>;
 
   const generating = post.metadata?.generating;
+  const imagePreviewSrc = image
+    ? image.dataUrl || api.gallery.images.fileUrl(image.id)
+    : null;
 
   return (
     <div>
@@ -127,12 +186,14 @@ export default function PostDetail() {
       </div>
 
       <div className={styles.grid}>
-        <Card title="Post content"
+        <Card
+          title="Post content"
           action={
             <div className={styles.row}>
               <button onClick={copy}>{copied ? <><Check size={14} /> copied</> : <><Copy size={14} /> copy</>}</button>
             </div>
-          }>
+          }
+        >
           <div className={styles.editor}>
             <textarea
               value={content}
@@ -194,18 +255,76 @@ export default function PostDetail() {
           </div>
         </Card>
 
-        <Card title="AI structured summary">
-          {post.summary ? (
-            <pre className={styles.summary}>{post.summary}</pre>
-          ) : (
-            <div style={{ opacity: 0.6 }}>
-              {generating ? 'Coder model is reading the diffs.' : 'No summary attached.'}
+        <div className={styles.sideStack}>
+          <Card
+            title="Build-in-public image"
+            action={
+              <Link
+                prefetch={false}
+                href="/dashboard/gallery"
+                title="Gallery defaults"
+                className={styles.iconLink}
+              >
+                <SettingsIcon size={14} />
+              </Link>
+            }
+          >
+            {imagePreviewSrc ? (
+              <div className={styles.imagePreview}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imagePreviewSrc} alt="Generated post" />
+              </div>
+            ) : (
+              <div className={styles.imageEmpty}>
+                <ImageIcon size={20} />
+                <div>
+                  No image yet. Once your post body is ready, Shipublic
+                  composites it onto your default background.
+                </div>
+              </div>
+            )}
+            {imageError && <div className={styles.imageError}>{imageError}</div>}
+            <div className={styles.row} style={{ marginTop: 12 }}>
+              <button
+                className="heroBtn"
+                onClick={generateImage}
+                disabled={imageBusy || generating}
+                title="Render the post text onto your default background"
+              >
+                <Sparkles size={14} /> {imageBusy ? 'Rendering' : 'Generate Image'}
+              </button>
+              <button onClick={downloadImage} disabled={!image}>
+                <Download size={14} /> Download
+              </button>
+              <Link
+                prefetch={false}
+                href={`/dashboard/posts/${post.id}/image`}
+                className={styles.linkBtn}
+                aria-disabled={!image}
+              >
+                <Pencil size={14} /> Edit
+              </Link>
             </div>
-          )}
-          <div style={{ marginTop: 12, fontSize: 12, opacity: 0.6 }}>
-            Commits used: {post.commitShas.length}
-          </div>
-        </Card>
+            {image && (
+              <div className={styles.imageMetaBar}>
+                {image.width}×{image.height} · {image.spec.ratio.toLowerCase()}
+              </div>
+            )}
+          </Card>
+
+          <Card title="AI structured summary">
+            {post.summary ? (
+              <pre className={styles.summary}>{post.summary}</pre>
+            ) : (
+              <div style={{ opacity: 0.6 }}>
+                {generating ? 'Coder model is reading the diffs.' : 'No summary attached.'}
+              </div>
+            )}
+            <div style={{ marginTop: 12, fontSize: 12, opacity: 0.6 }}>
+              Commits used: {post.commitShas.length}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -114,4 +114,40 @@ export const api = {
       apiFetch(`/api/posts/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     remove: (id: string) => apiFetch(`/api/posts/${id}`, { method: 'DELETE' }),
   },
+  gallery: {
+    ratios: () => apiFetch('/api/gallery/ratios'),
+    settings: {
+      get: () => apiFetch('/api/gallery/settings'),
+      update: (body: any) =>
+        apiFetch('/api/gallery/settings', {
+          method: 'PUT',
+          body: JSON.stringify(body),
+        }),
+    },
+    assets: {
+      list: () => apiFetch('/api/gallery/assets'),
+      upload: (body: { name: string; mimeType: string; base64: string }) =>
+        apiFetch('/api/gallery/assets', { method: 'POST', body: JSON.stringify(body) }),
+      remove: (id: string) =>
+        apiFetch(`/api/gallery/assets/${id}`, { method: 'DELETE' }),
+      // File URLs are emitted as relative paths so the browser hits Next's
+      // /api rewrite proxy and cookie auth flows seamlessly.
+      fileUrl: (id: string) => `/api/gallery/assets/${id}/file`,
+    },
+    images: {
+      list: (postId?: string) =>
+        apiFetch(`/api/gallery/images${postId ? `?postId=${postId}` : ''}`),
+      get: (id: string) => apiFetch(`/api/gallery/images/${id}`),
+      update: (id: string, body: any) =>
+        apiFetch(`/api/gallery/images/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      remove: (id: string) =>
+        apiFetch(`/api/gallery/images/${id}`, { method: 'DELETE' }),
+      fileUrl: (id: string) => `/api/gallery/images/${id}/file`,
+    },
+    generate: (body: any) =>
+      apiFetch('/api/gallery/generate', { method: 'POST', body: JSON.stringify(body) }),
+  },
 };

@@ -15,12 +15,18 @@
 import type {
   Commit,
   ContributionCalendar,
+  GalleryAsset,
+  GalleryImage,
+  GalleryRenderSpec,
+  GallerySettings,
   Post,
   Project,
   RepoSummary,
   User,
 } from './types';
 import { appendSignature, DEFAULT_SIGNATURE, getSettings } from './settings';
+import { RATIOS } from './gallery-ratios';
+import { normaliseSpec, renderToDataUrl, uhdScale, type PartialRenderSpec } from './gallery-render';
 
 export const DEMO_USERNAME = 'blessl.in';
 export const DEMO_PASSWORD = 'blessl.in';
@@ -78,6 +84,9 @@ interface DemoStore {
   available: RepoSummary[];
   commitsByProject: Record<string, Commit[]>;
   posts: Post[];
+  galleryAssets: GalleryAsset[];
+  galleryImages: GalleryImage[];
+  gallerySettings: GallerySettings;
 }
 
 let store: DemoStore | null = null;
@@ -343,7 +352,146 @@ function resetDemoStore() {
     available,
     commitsByProject,
     posts: buildPosts(projects),
+    galleryAssets: buildDemoAssets(),
+    galleryImages: [],
+    gallerySettings: buildDemoSettings(),
   };
+  // Hydrate canvas-rendered preview images for the seeded posts so the
+  // gallery and post detail pages have something to show on first load.
+  hydrateDemoGalleryImages();
+}
+
+// ---------------------------------------------------------------------------
+// Demo gallery seed
+// ---------------------------------------------------------------------------
+
+const DEMO_DEFAULT_BG_URL = '/demo/blessl-bg.png';
+const DEMO_DEFAULT_ASSET_ID = 'demo-asset-default';
+
+function buildDemoAssets(): GalleryAsset[] {
+  return [
+    {
+      id: DEMO_DEFAULT_ASSET_ID,
+      userId: 'demo-user-1',
+      name: 'blessl.in default',
+      mimeType: 'image/png',
+      width: 2160,
+      height: 2700,
+      sizeBytes: 174456,
+      filename: 'blessl-bg.png',
+      isDefault: true,
+      createdAt: nowIso(-365),
+      updatedAt: nowIso(-365),
+      url: DEMO_DEFAULT_BG_URL,
+    },
+  ];
+}
+
+function buildDemoSettings(): GallerySettings {
+  return {
+    id: 'demo-gs-1',
+    userId: 'demo-user-1',
+    defaultRatio: 'INSTAGRAM_PORTRAIT',
+    marginTopPct: 14,
+    marginBottomPct: 16,
+    marginLeftPct: 8,
+    marginRightPct: 8,
+    fontFamily: 'Inter',
+    fontSize: 48,
+    fontColor: '#FFFFFF',
+    textAlign: 'left',
+    verticalAlign: 'center',
+    bgFit: 'cover',
+    bgFillColor: '#1D1E21',
+    defaultAssetId: DEMO_DEFAULT_ASSET_ID,
+    autoGenerate: true,
+    createdAt: nowIso(-365),
+    updatedAt: nowIso(-1),
+  };
+}
+
+function bgUrlForAsset(s: DemoStore, assetId: string | null | undefined): string | null {
+  if (!assetId) {
+    return s.gallerySettings.defaultAssetId
+      ? bgUrlForAsset(s, s.gallerySettings.defaultAssetId)
+      : DEMO_DEFAULT_BG_URL;
+  }
+  const a = s.galleryAssets.find((x) => x.id === assetId);
+  return a?.url || DEMO_DEFAULT_BG_URL;
+}
+
+function hydrateDemoGalleryImages() {
+  // Lazy: defer to next tick so SSR-safe + so initial render is not blocked.
+  if (typeof window === 'undefined' || !store) return;
+  const s = store;
+  // Render an image for the three most-recent posts. Failures are silent in
+  // demo so a missing default BG simply yields no preview.
+  setTimeout(async () => {
+    const targets = s.posts.slice(0, 3);
+    for (const post of targets) {
+      try {
+        await ensureDemoImageForPost(s, post);
+        // Trigger a re-render by notifying any subscribed UI via the cache
+        // bust hook. Demo callers re-fetch on every navigation, so a
+        // notification here is a UX nicety, not a requirement.
+      } catch {
+        /* ignore */
+      }
+    }
+  }, 50);
+}
+
+async function ensureDemoImageForPost(s: DemoStore, post: Post): Promise<GalleryImage> {
+  const existing = s.galleryImages.find((g) => g.postId === post.id);
+  if (existing) return existing;
+  const ratio = (() => {
+    if (post.platform === 'TWITTER') return 'TWITTER_LANDSCAPE';
+    if (post.platform === 'LINKEDIN') return 'LINKEDIN_LANDSCAPE';
+    return s.gallerySettings.defaultRatio;
+  })();
+  const partial: PartialRenderSpec = {
+    ratio,
+    marginTopPct: s.gallerySettings.marginTopPct,
+    marginBottomPct: s.gallerySettings.marginBottomPct,
+    marginLeftPct: s.gallerySettings.marginLeftPct,
+    marginRightPct: s.gallerySettings.marginRightPct,
+    fontFamily: s.gallerySettings.fontFamily,
+    fontSize: s.gallerySettings.fontSize,
+    fontColor: s.gallerySettings.fontColor,
+    textAlign: s.gallerySettings.textAlign,
+    verticalAlign: s.gallerySettings.verticalAlign,
+    bgFit: s.gallerySettings.bgFit,
+    bgFillColor: s.gallerySettings.bgFillColor,
+    content: post.content || '',
+  };
+  const spec = normaliseSpec(partial);
+  // Render the demo asset at >= UHD so that the post-page Download (which
+  // streams `image.dataUrl` straight to the user in demo mode) is full-res.
+  const scale = uhdScale(spec);
+  let dataUrl = '';
+  try {
+    dataUrl = await renderToDataUrl(spec, DEMO_DEFAULT_BG_URL, { scale });
+  } catch {
+    /* ignore — image stays empty in demo */
+  }
+  const img: GalleryImage = {
+    id: `demo-img-${post.id}`,
+    userId: 'demo-user-1',
+    postId: post.id,
+    assetId: DEMO_DEFAULT_ASSET_ID,
+    filename: `${post.id}.png`,
+    mimeType: 'image/png',
+    width: spec.width * scale,
+    height: spec.height * scale,
+    sizeBytes: dataUrl.length,
+    spec: spec as GalleryRenderSpec,
+    status: 'READY',
+    createdAt: nowIso(0),
+    updatedAt: nowIso(0),
+    dataUrl,
+  };
+  s.galleryImages.unshift(img);
+  return img;
 }
 
 function getStore(): DemoStore {
@@ -593,6 +741,187 @@ export async function handleDemoRequest(rawPath: string, init: RequestInit = {})
     if (method === 'DELETE') {
       notify('Demo: delete is disabled. The post will reappear on refresh.');
       s.posts.splice(idx, 1);
+      return delay({ ok: true });
+    }
+  }
+
+  // ---- Gallery ----
+  if (path === '/api/gallery/ratios' && method === 'GET') {
+    return delay(RATIOS);
+  }
+  if (path === '/api/gallery/settings' && method === 'GET') {
+    return delay(s.gallerySettings);
+  }
+  if (path === '/api/gallery/settings' && method === 'PUT') {
+    const body = readBody<Partial<GallerySettings>>(init) || {};
+    s.gallerySettings = {
+      ...s.gallerySettings,
+      ...body,
+      updatedAt: nowIso(),
+    };
+    notify('Demo: gallery settings updated locally.');
+    return delay(s.gallerySettings);
+  }
+  if (path === '/api/gallery/assets' && method === 'GET') {
+    return delay(s.galleryAssets);
+  }
+  if (path === '/api/gallery/assets' && method === 'POST') {
+    const body = readBody<{ name?: string; mimeType?: string; base64?: string }>(init) || {};
+    const raw = String(body.base64 || '').replace(/^data:[^;]+;base64,/, '');
+    const mime = body.mimeType || 'image/png';
+    if (!raw) {
+      notify('Demo: upload missing image bytes.');
+      return delay({ message: 'no bytes' }, 80);
+    }
+    // Approximate size from base64 length to keep the demo dependency free.
+    const sizeBytes = Math.floor(raw.length * 0.75);
+    const id = `demo-asset-${Date.now()}`;
+    const asset: GalleryAsset = {
+      id,
+      userId: 'demo-user-1',
+      name: body.name || 'background',
+      mimeType: mime,
+      width: 1200,
+      height: 1500,
+      sizeBytes,
+      filename: `${id}.png`,
+      isDefault: false,
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+      url: `data:${mime};base64,${raw}`,
+    };
+    s.galleryAssets.unshift(asset);
+    if (!s.gallerySettings.defaultAssetId) {
+      s.gallerySettings = {
+        ...s.gallerySettings,
+        defaultAssetId: id,
+        updatedAt: nowIso(),
+      };
+    }
+    notify('Demo: background uploaded locally. Refresh resets the demo workspace.');
+    return delay(asset);
+  }
+
+  const assetMatch = path.match(/^\/api\/gallery\/assets\/([^/]+)$/);
+  if (assetMatch && method === 'DELETE') {
+    const id = assetMatch[1];
+    const idx = s.galleryAssets.findIndex((a) => a.id === id);
+    if (idx >= 0) {
+      if (s.galleryAssets[idx].isDefault) {
+        notify('Demo: the bundled default cannot be deleted.');
+        return delay({ message: 'cannot delete bundled default' }, 80);
+      }
+      s.galleryAssets.splice(idx, 1);
+      if (s.gallerySettings.defaultAssetId === id) {
+        s.gallerySettings = {
+          ...s.gallerySettings,
+          defaultAssetId: DEMO_DEFAULT_ASSET_ID,
+          updatedAt: nowIso(),
+        };
+      }
+    }
+    notify('Demo: background removed (local only).');
+    return delay({ ok: true });
+  }
+
+  if (path === '/api/gallery/images' && method === 'GET') {
+    const postId = params.get('postId');
+    let list = s.galleryImages;
+    if (postId) list = list.filter((g) => g.postId === postId);
+    return delay([...list].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)));
+  }
+
+  if (path === '/api/gallery/generate' && method === 'POST') {
+    const body = readBody<{ postId: string } & Partial<GalleryRenderSpec> & { assetId?: string }>(init) || ({} as any);
+    const post = s.posts.find((p) => p.id === body.postId);
+    if (!post) {
+      return delay({ message: 'post not found' }, 80);
+    }
+    const assetId = body.assetId || s.gallerySettings.defaultAssetId || DEMO_DEFAULT_ASSET_ID;
+    const partial: PartialRenderSpec = {
+      ratio: body.ratio || s.gallerySettings.defaultRatio,
+      marginTopPct: body.marginTopPct ?? s.gallerySettings.marginTopPct,
+      marginBottomPct: body.marginBottomPct ?? s.gallerySettings.marginBottomPct,
+      marginLeftPct: body.marginLeftPct ?? s.gallerySettings.marginLeftPct,
+      marginRightPct: body.marginRightPct ?? s.gallerySettings.marginRightPct,
+      fontFamily: body.fontFamily || s.gallerySettings.fontFamily,
+      fontSize: body.fontSize ?? s.gallerySettings.fontSize,
+      fontColor: body.fontColor || s.gallerySettings.fontColor,
+      textAlign: body.textAlign || s.gallerySettings.textAlign,
+      verticalAlign: body.verticalAlign || s.gallerySettings.verticalAlign,
+      bgFit: body.bgFit || s.gallerySettings.bgFit,
+      bgFillColor: body.bgFillColor || s.gallerySettings.bgFillColor,
+      content: body.content ?? post.content,
+      offsetX: body.offsetX,
+      offsetY: body.offsetY,
+    };
+    const spec = normaliseSpec(partial);
+    const scale = uhdScale(spec);
+    let dataUrl = '';
+    try {
+      dataUrl = await renderToDataUrl(spec, bgUrlForAsset(s, assetId), { scale });
+    } catch {
+      /* ignore */
+    }
+    const id = `demo-img-${Date.now()}`;
+    const img: GalleryImage = {
+      id,
+      userId: 'demo-user-1',
+      postId: post.id,
+      assetId,
+      filename: `${id}.png`,
+      mimeType: 'image/png',
+      width: spec.width * scale,
+      height: spec.height * scale,
+      sizeBytes: dataUrl.length,
+      spec,
+      status: 'READY',
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+      dataUrl,
+    };
+    // Replace the latest image for this post so the editor doesn't pile up
+    // intermediate renders during slider drags.
+    s.galleryImages = [img, ...s.galleryImages.filter((g) => g.postId !== post.id)];
+    notify('Demo: image rendered locally with the canvas renderer.');
+    return delay(img);
+  }
+
+  const imgMatch = path.match(/^\/api\/gallery\/images\/([^/]+)$/);
+  if (imgMatch) {
+    const id = imgMatch[1];
+    const idx = s.galleryImages.findIndex((g) => g.id === id);
+    if (idx < 0) return delay({ message: 'not found' }, 80);
+    if (method === 'GET') return delay(s.galleryImages[idx]);
+    if (method === 'PATCH') {
+      const body = readBody<Partial<GalleryRenderSpec> & { assetId?: string | null }>(init) || {};
+      const prior = s.galleryImages[idx];
+      const merged: PartialRenderSpec = { ...prior.spec, ...body } as any;
+      const spec = normaliseSpec(merged);
+      const assetId = body.assetId !== undefined ? body.assetId : prior.assetId;
+      const scale = uhdScale(spec);
+      let dataUrl = '';
+      try {
+        dataUrl = await renderToDataUrl(spec, bgUrlForAsset(s, assetId), { scale });
+      } catch {
+        /* ignore */
+      }
+      s.galleryImages[idx] = {
+        ...prior,
+        assetId: assetId ?? null,
+        width: spec.width * scale,
+        height: spec.height * scale,
+        sizeBytes: dataUrl.length,
+        spec,
+        updatedAt: nowIso(),
+        dataUrl,
+      };
+      notify('Demo: image edits saved locally.');
+      return delay(s.galleryImages[idx]);
+    }
+    if (method === 'DELETE') {
+      s.galleryImages.splice(idx, 1);
+      notify('Demo: image deleted (local only).');
       return delay({ ok: true });
     }
   }

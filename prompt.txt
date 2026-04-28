@@ -186,3 +186,23 @@ Don't change any business logics or Ui/Ux
 Optimize the whole application end to end like a industry standard enterprise grade level application and give the performance improvements report at last. make no mistakes
 
 write the final report in docs/optimization.MD file
+
+1. We are working on Shipublic
+
+I already have a canva like clone MVP in this workspace, called GreetOS for your reference. They both are in the same tech stack.
+
+I need a option to generate a image for my FINAL Build in public post which shipublic generates at last passed through "OLLAMA_CHAT_MODEL=qwen3:32b"
+
+It should be in a seperate module and it should have sidebar seperate module option too and it should be inside post generation module also i.e /dashboard/posts/POST_SLUG
+
+1.2 In final post generation module. /dashboard/posts/POST_SLUG it should have an Generate build in public post image option also label named as "Generate Image" on click should edit the build in public text into the background image provided by the user in the "Gallery" sidebar module. it should also auto generate the image on whenever the build in public post is ready. It should also have the download button
+
+1.3 In side bar "Gallery Module" The background image settings and the ratio settings can be manage in a new sidebar module "Gallery" which should show all the previous generated post and its options view, download etc, the settings for image ratios (have all default ratios options same like canva , we are concentrating mostly on LinkedIn, X.com (formerly twitter) and Instagram. It will be great if i can control/config the margin/borders of the default generated post where to where the build in public post should embed because i have a header and footer in the template.
+
+make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly. make it as an enterprise grade level application. Implement
+
+1.4 There should be a custom post edit feature also same like GreetOS so i can edit my final image post if i need any changes. Implement
+
+3. Also add image and edit the existing demo data into the image Background in the demo data. I am attaching my demo bg image.check the ratio and act accordingly for demo mode. I have attached the default image in the chat workspace folder blessl.in.png do accordingly
+
+make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly. make it as an enterprise grade level application. Implement

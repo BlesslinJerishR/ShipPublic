@@ -9,6 +9,7 @@ import {
   FolderGit2,
   CalendarDays,
   Sparkles,
+  ImageIcon,
   LogOut,
   Sun,
   Moon,
@@ -104,6 +105,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/posts') ? styles.navActive : ''}`} href="/dashboard/posts">
             <Sparkles size={16} /> Posts
+          </Link>
+          <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/gallery') ? styles.navActive : ''}`} href="/dashboard/gallery">
+            <ImageIcon size={16} /> Gallery
           </Link>
           <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/settings') ? styles.navActive : ''}`} href="/dashboard/settings">
             <SettingsIcon size={16} /> Settings

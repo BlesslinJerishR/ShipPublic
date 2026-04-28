@@ -1,0 +1,183 @@
+.wrap { display: flex; flex-direction: column; gap: 18px; }
+.title { margin: 0; font-size: 22px; font-weight: 800; }
+.subtitle { color: rgba(var(--fgRgb), 0.7); font-size: 13.5px; margin-top: 4px; max-width: 720px; }
+.muted { color: rgba(var(--fgRgb), 0.6); font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+.error {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 0, 79, 0.08);
+  border: 1px solid rgba(255, 0, 79, 0.35);
+  color: var(--hero);
+  font-size: 12.5px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 1100px) { .row2 { grid-template-columns: 1fr; } }
+
+.assetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.assetCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(var(--fgRgb), 0.10);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(var(--fgRgb), 0.02);
+  transition: border-color 0.15s ease;
+}
+.assetCard:hover { border-color: rgba(var(--fgRgb), 0.22); }
+.assetActive {
+  border-color: rgba(255, 0, 79, 0.55);
+  box-shadow: 0 0 0 1px rgba(255, 0, 79, 0.35);
+}
+.assetThumb {
+  aspect-ratio: 4 / 5;
+  background: rgba(var(--fgRgb), 0.04);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.assetThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.assetMeta { padding: 8px 10px 0; min-width: 0; }
+.assetName {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.assetSub { font-size: 11.5px; opacity: 0.6; margin-top: 2px; }
+.assetActions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  justify-content: flex-end;
+}
+.assetActions button {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.marginGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  border-top: 1px dashed rgba(var(--fgRgb), 0.12);
+  padding-top: 12px;
+}
+.fieldLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+  margin-bottom: 6px;
+}
+.range { width: 100%; accent-color: var(--hero); }
+.color {
+  width: 56px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(var(--fgRgb), 0.18);
+  cursor: pointer;
+}
+.toggle {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 8px;
+}
+.imageCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(var(--fgRgb), 0.10);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(var(--fgRgb), 0.02);
+}
+.imageThumb {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: rgba(var(--fgRgb), 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.imageThumb img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+.failedBadge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  background: rgba(255, 0, 79, 0.85);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.imageMeta { padding: 10px 12px 0; min-width: 0; }
+.imageTitle {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.imageActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 8px 12px;
+}
+.imageActions button, .iconLink {
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid rgba(var(--fgRgb), 0.16);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: inherit;
+}
+.iconLink:hover { border-color: rgba(var(--fgRgb), 0.32); background: rgba(var(--fgRgb), 0.04); }

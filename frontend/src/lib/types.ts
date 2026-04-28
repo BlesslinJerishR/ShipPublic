@@ -86,3 +86,92 @@ export interface ContributionCalendar {
 }
 
 export interface DailyAgg { date: string; count: number; }
+
+// ---------------------------------------------------------------------------
+// Gallery
+// ---------------------------------------------------------------------------
+
+export interface GalleryAsset {
+  id: string;
+  userId: string;
+  name: string;
+  mimeType: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  filename: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+  /** Synthetic field set on the demo store / mappers so UIs can render bytes
+   *  without hitting an authenticated backend route. */
+  url?: string;
+}
+
+export interface GalleryRenderSpec {
+  ratio: string;
+  width: number;
+  height: number;
+  marginTopPct: number;
+  marginBottomPct: number;
+  marginLeftPct: number;
+  marginRightPct: number;
+  fontFamily: string;
+  fontSize: number;
+  fontColor: string;
+  textAlign: 'left' | 'center' | 'right';
+  verticalAlign: 'start' | 'center' | 'end';
+  bgFit: 'cover' | 'contain';
+  bgFillColor: string;
+  content: string;
+  offsetX?: number;
+  offsetY?: number;
+}
+
+export interface GalleryImage {
+  id: string;
+  userId: string;
+  postId: string | null;
+  assetId: string | null;
+  filename: string;
+  mimeType: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  spec: GalleryRenderSpec;
+  status: 'READY' | 'FAILED';
+  createdAt: string;
+  updatedAt: string;
+  /** Synthetic — set by demo store to avoid an authenticated file fetch. */
+  dataUrl?: string;
+}
+
+export interface GallerySettings {
+  id: string;
+  userId: string;
+  defaultRatio: string;
+  marginTopPct: number;
+  marginBottomPct: number;
+  marginLeftPct: number;
+  marginRightPct: number;
+  fontFamily: string;
+  fontSize: number;
+  fontColor: string;
+  textAlign: 'left' | 'center' | 'right';
+  verticalAlign: 'start' | 'center' | 'end';
+  bgFit: 'cover' | 'contain';
+  bgFillColor: string;
+  defaultAssetId: string | null;
+  autoGenerate: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryRatio {
+  id: string;
+  label: string;
+  width: number;
+  height: number;
+  group: 'instagram' | 'linkedin' | 'twitter' | 'story' | 'general';
+}
+

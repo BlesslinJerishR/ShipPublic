@@ -4,6 +4,7 @@ import type { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { CommitsService } from '../commits/commits.service';
 import { OllamaService } from '../ollama/ollama.service';
+import { GalleryService } from '../gallery/gallery.service';
 import { POSTS_QUEUE } from './posts.module';
 
 interface GenerateJobData {
@@ -22,6 +23,7 @@ export class PostsProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly commits: CommitsService,
     private readonly ollama: OllamaService,
+    private readonly gallery: GalleryService,
   ) {
     super();
   }
@@ -67,6 +69,10 @@ export class PostsProcessor extends WorkerHost {
           metadata: { tone, generating: false, completedAt: new Date().toISOString() },
         },
       });
+      // Auto-render the build-in-public image once the post body is ready.
+      // Failures are swallowed inside the gallery service so the post still
+      // succeeds even if rendering hits an issue (e.g. missing libvips).
+      await this.gallery.autoGenerateForPost(userId, postId);
     } catch (err: any) {
       this.logger.error(`Post ${postId} generation failed: ${err?.message}`);
       await this.prisma.post.update({
