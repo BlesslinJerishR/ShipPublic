@@ -206,3 +206,5 @@ make no mistakes. It should work end to end. implement end to end. implement bot
 3. Also add image and edit the existing demo data into the image Background in the demo data. I am attaching my demo bg image.check the ratio and act accordingly for demo mode. I have attached the default image in the chat workspace folder blessl.in.png do accordingly
 
 make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly. make it as an enterprise grade level application. Implement
+
+in shipublic landing page "GitHub OAuth" section card - the icon inside the card is not showing/rendering. fix
