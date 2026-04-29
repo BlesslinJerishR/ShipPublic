@@ -150,4 +150,42 @@ export const api = {
     generate: (body: any) =>
       apiFetch('/api/gallery/generate', { method: 'POST', body: JSON.stringify(body) }),
   },
+  news: {
+    sources: {
+      list: () => apiFetch('/api/news/sources'),
+      create: (body: any) =>
+        apiFetch('/api/news/sources', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        }),
+      update: (id: string, body: any) =>
+        apiFetch(`/api/news/sources/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        }),
+      remove: (id: string) =>
+        apiFetch(`/api/news/sources/${id}`, { method: 'DELETE' }),
+    },
+    items: {
+      list: (params: { sourceId?: string; status?: string; take?: number } = {}) => {
+        const q = new URLSearchParams();
+        if (params.sourceId) q.set('sourceId', params.sourceId);
+        if (params.status) q.set('status', params.status);
+        if (params.take) q.set('take', String(params.take));
+        return apiFetch(`/api/news/items?${q.toString()}`);
+      },
+      dismiss: (id: string) =>
+        apiFetch(`/api/news/items/${id}/dismiss`, { method: 'PATCH' }),
+    },
+    refresh: (sourceIds?: string[]) =>
+      apiFetch('/api/news/refresh', {
+        method: 'POST',
+        body: JSON.stringify({ sourceIds: sourceIds || [] }),
+      }),
+    generate: (body: { newsItemIds: string[]; platform?: string; tone?: string; assetId?: string | null }) =>
+      apiFetch('/api/news/generate', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
 };

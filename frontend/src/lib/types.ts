@@ -55,10 +55,13 @@ export interface Commit {
 export type PostPlatform = 'TWITTER' | 'LINKEDIN' | 'GENERIC';
 export type PostStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'FAILED';
 
+export type PostKind = 'COMMITS' | 'NEWS';
+
 export interface Post {
   id: string;
   userId: string;
-  projectId: string;
+  projectId: string | null;
+  kind?: PostKind;
   title: string | null;
   content: string;
   summary: string | null;
@@ -67,11 +70,63 @@ export interface Post {
   scheduledFor: string | null;
   publishedAt: string | null;
   commitShas: string[];
+  newsItemIds?: string[];
   rangeFrom: string | null;
   rangeTo: string | null;
   metadata: any;
   createdAt: string;
   updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// AI News Gen
+// ---------------------------------------------------------------------------
+
+export type NewsSourceKind =
+  | 'GOOGLE_NEWS'
+  | 'TECHCRUNCH'
+  | 'HACKER_NEWS'
+  | 'REDDIT'
+  | 'CUSTOM';
+
+export type NewsItemStatus = 'NEW' | 'USED' | 'DISMISSED';
+
+export interface NewsSource {
+  id: string;
+  userId: string;
+  kind: NewsSourceKind;
+  name: string;
+  url: string;
+  query: string | null;
+  subreddit: string | null;
+  enabled: boolean;
+  lastFetchedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewsItem {
+  id: string;
+  userId: string;
+  sourceId: string | null;
+  externalId: string;
+  kind: NewsSourceKind;
+  sourceName: string;
+  title: string;
+  link: string;
+  author: string | null;
+  snippet: string | null;
+  contentHtml: string | null;
+  publishedAt: string | null;
+  status: NewsItemStatus;
+  raw: any;
+  createdAt: string;
+}
+
+export interface NewsRefreshResult {
+  fetched: number;
+  inserted: number;
+  errors: Array<{ source: string; message: string }>;
 }
 
 export interface ContributionDay {

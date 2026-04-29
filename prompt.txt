@@ -211,6 +211,9 @@ in shipublic landing page "GitHub OAuth" section card - the icon inside the card
 
 1. I am building a free opensource build in public post generation both text and image generation. It reads my git and file diffs, code and then pass it to opensource ollama qwen coder and then pass it to Qwen 3 for post generation. I have already build it now i want auto ai news generation post ai text and ai gen Image background or add in the post image.
 
+Have as a seperate module in the sidebar in the Label . 
+"AI News Gen"
+
 The real pro move (what you should actually do)
 
 APIs are not truly “free at scale”.

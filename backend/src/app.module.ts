@@ -12,6 +12,7 @@ import { OllamaModule } from './ollama/ollama.module';
 import { GithubModule } from './github/github.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { NewsModule } from './news/news.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -33,6 +34,7 @@ import { HealthController } from './health.controller';
     PostsModule,
     WebhooksModule,
     GalleryModule,
+    NewsModule,
   ],
   controllers: [HealthController],
 })

@@ -40,7 +40,7 @@ export default function PostsPage() {
     const q = deferredFilter.toLowerCase();
     return posts.filter((p) =>
       p.content.toLowerCase().includes(q) ||
-      (projectMap.get(p.projectId) || '').toLowerCase().includes(q),
+      ((p.projectId && projectMap.get(p.projectId)) || '').toLowerCase().includes(q),
     );
   }, [posts, deferredFilter, projectMap]);
 
@@ -67,7 +67,8 @@ export default function PostsPage() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, opacity: 0.6 }}>
                 <span>
-                  {projectMap.get(p.projectId) || ''} · {p.platform.toLowerCase()} ·{' '}
+                  {(p.projectId && projectMap.get(p.projectId)) ||
+                    (p.kind === 'NEWS' ? 'AI News Gen' : '')} · {p.platform.toLowerCase()} ·{' '}
                   <span style={{ color: STATUS_COLORS[p.status] }}>{p.status.toLowerCase()}</span>
                 </span>
                 <span>{new Date(p.createdAt).toLocaleString()}</span>

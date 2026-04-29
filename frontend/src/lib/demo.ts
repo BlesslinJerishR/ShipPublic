@@ -19,6 +19,10 @@ import type {
   GalleryImage,
   GalleryRenderSpec,
   GallerySettings,
+  NewsItem,
+  NewsRefreshResult,
+  NewsSource,
+  NewsSourceKind,
   Post,
   Project,
   RepoSummary,
@@ -87,6 +91,8 @@ interface DemoStore {
   galleryAssets: GalleryAsset[];
   galleryImages: GalleryImage[];
   gallerySettings: GallerySettings;
+  newsSources: NewsSource[];
+  newsItems: NewsItem[];
 }
 
 let store: DemoStore | null = null;
@@ -340,6 +346,11 @@ function resetDemoStore() {
     },
   ];
 
+  const seededPosts = buildPosts(projects);
+  const newsSources = buildDemoNewsSources();
+  const newsItems = buildDemoNewsItems(newsSources);
+  const newsPost = buildDemoNewsPost(newsItems);
+
   store = {
     user: {
       id: 'demo-user-1',
@@ -351,10 +362,12 @@ function resetDemoStore() {
     projects,
     available,
     commitsByProject,
-    posts: buildPosts(projects),
+    posts: [newsPost, ...seededPosts],
     galleryAssets: buildDemoAssets(),
     galleryImages: [],
     gallerySettings: buildDemoSettings(),
+    newsSources,
+    newsItems,
   };
   // Hydrate canvas-rendered preview images for the seeded posts so the
   // gallery and post detail pages have something to show on first load.
@@ -367,6 +380,8 @@ function resetDemoStore() {
 
 const DEMO_DEFAULT_BG_URL = '/demo/blessl-bg.png';
 const DEMO_DEFAULT_ASSET_ID = 'demo-asset-default';
+const DEMO_NEWS_OVERLAY_URL = '/demo/demo-asset.jpg';
+const DEMO_NEWS_POST_ID = 'demo-post-news-default';
 
 function buildDemoAssets(): GalleryAsset[] {
   return [
@@ -444,7 +459,9 @@ function hydrateDemoGalleryImages() {
 async function ensureDemoImageForPost(s: DemoStore, post: Post): Promise<GalleryImage> {
   const existing = s.galleryImages.find((g) => g.postId === post.id);
   if (existing) return existing;
+  const isNews = post.kind === 'NEWS';
   const ratio = (() => {
+    if (isNews) return 'INSTAGRAM_PORTRAIT';
     if (post.platform === 'TWITTER') return 'TWITTER_LANDSCAPE';
     if (post.platform === 'LINKEDIN') return 'LINKEDIN_LANDSCAPE';
     return s.gallerySettings.defaultRatio;
@@ -452,14 +469,14 @@ async function ensureDemoImageForPost(s: DemoStore, post: Post): Promise<Gallery
   const partial: PartialRenderSpec = {
     ratio,
     marginTopPct: s.gallerySettings.marginTopPct,
-    marginBottomPct: s.gallerySettings.marginBottomPct,
+    marginBottomPct: isNews ? 38 : s.gallerySettings.marginBottomPct,
     marginLeftPct: s.gallerySettings.marginLeftPct,
     marginRightPct: s.gallerySettings.marginRightPct,
     fontFamily: s.gallerySettings.fontFamily,
-    fontSize: s.gallerySettings.fontSize,
+    fontSize: isNews ? 56 : s.gallerySettings.fontSize,
     fontColor: s.gallerySettings.fontColor,
     textAlign: s.gallerySettings.textAlign,
-    verticalAlign: s.gallerySettings.verticalAlign,
+    verticalAlign: isNews ? 'start' : s.gallerySettings.verticalAlign,
     bgFit: s.gallerySettings.bgFit,
     bgFillColor: s.gallerySettings.bgFillColor,
     content: post.content || '',
@@ -470,7 +487,12 @@ async function ensureDemoImageForPost(s: DemoStore, post: Post): Promise<Gallery
   const scale = uhdScale(spec);
   let dataUrl = '';
   try {
-    dataUrl = await renderToDataUrl(spec, DEMO_DEFAULT_BG_URL, { scale });
+    dataUrl = await renderToDataUrl(spec, DEMO_DEFAULT_BG_URL, {
+      scale,
+      foregroundUrl: isNews ? DEMO_NEWS_OVERLAY_URL : null,
+      foregroundWidthPct: 0.7,
+      foregroundAnchor: 'center',
+    });
   } catch {
     /* ignore — image stays empty in demo */
   }
@@ -497,6 +519,189 @@ async function ensureDemoImageForPost(s: DemoStore, post: Post): Promise<Gallery
 function getStore(): DemoStore {
   if (!store) resetDemoStore();
   return store!;
+}
+
+// ---------------------------------------------------------------------------
+// Demo AI News Gen seed
+// ---------------------------------------------------------------------------
+
+function buildDemoNewsSources(): NewsSource[] {
+  const mk = (
+    kind: NewsSourceKind,
+    name: string,
+    extra: Partial<NewsSource> = {},
+  ): NewsSource => ({
+    id: `demo-news-src-${kind.toLowerCase()}-${name.replace(/\W+/g, '-').toLowerCase()}`,
+    userId: 'demo-user-1',
+    kind,
+    name,
+    url: extra.url || '',
+    query: extra.query ?? null,
+    subreddit: extra.subreddit ?? null,
+    enabled: true,
+    lastFetchedAt: nowIso(-0.05),
+    createdAt: nowIso(-30),
+    updatedAt: nowIso(-1),
+  });
+  return [
+    mk('GOOGLE_NEWS', 'Google News — AI', {
+      url: 'https://news.google.com/rss/search?q=AI',
+      query: 'AI',
+    }),
+    mk('TECHCRUNCH', 'TechCrunch', { url: 'https://techcrunch.com/feed/' }),
+    mk('HACKER_NEWS', 'Hacker News — Front Page', {
+      url: 'https://hnrss.org/frontpage',
+    }),
+    mk('REDDIT', 'Reddit — r/Artificial', {
+      url: 'https://www.reddit.com/r/Artificial/.rss',
+      subreddit: 'Artificial',
+    }),
+    mk('REDDIT', 'Reddit — r/MachineLearning', {
+      url: 'https://www.reddit.com/r/MachineLearning/.rss',
+      subreddit: 'MachineLearning',
+    }),
+  ];
+}
+
+function buildDemoNewsItems(sources: NewsSource[]): NewsItem[] {
+  const seed: Array<Pick<NewsItem, 'title' | 'link' | 'snippet' | 'author'> & {
+    sourceIdx: number;
+    daysAgo: number;
+    status?: NewsItem['status'];
+  }> = [
+    {
+      sourceIdx: 0,
+      title: 'Open-source LLMs close the gap on closed models again',
+      snippet:
+        'A wave of new releases shows community-trained models matching frontier benchmarks at a fraction of the cost.',
+      link: 'https://example.com/open-source-llms-2026',
+      author: 'AI Daily',
+      daysAgo: 0,
+    },
+    {
+      sourceIdx: 1,
+      title: 'Solo devs are shipping faster with local AI pipelines',
+      snippet:
+        'Indie hackers report 3x throughput by replacing SaaS APIs with Ollama + ComfyUI on a single workstation.',
+      link: 'https://techcrunch.com/2026/04/local-ai-indie-shipping',
+      author: 'TechCrunch',
+      daysAgo: 1,
+    },
+    {
+      sourceIdx: 2,
+      title: 'Show HN: A free build-in-public engine for git commits',
+      snippet:
+        'Reads diffs with a coder model, polishes with a chat model, renders an image — entirely on your machine.',
+      link: 'https://news.ycombinator.com/item?id=99999999',
+      author: 'hn:blessl',
+      daysAgo: 0,
+    },
+    {
+      sourceIdx: 3,
+      title: 'r/Artificial: ComfyUI workflow for editorial post backgrounds',
+      snippet:
+        'A community-shared SDXL workflow produces consistent crimson-on-black hero images for solo devs.',
+      link: 'https://www.reddit.com/r/Artificial/comments/abc123',
+      author: 'u/comfy-fan',
+      daysAgo: 2,
+    },
+    {
+      sourceIdx: 4,
+      title: 'r/MachineLearning: Qwen 3 release notes — small models, big jumps',
+      snippet:
+        'New checkpoints push state-of-the-art for the 7B/14B class while staying friendly to consumer GPUs.',
+      link: 'https://www.reddit.com/r/MachineLearning/comments/qwen3',
+      author: 'u/qwen-watcher',
+      daysAgo: 3,
+    },
+    {
+      sourceIdx: 0,
+      title: 'EU AI Act: practical impact for indie SaaS in 2026',
+      snippet:
+        'A plain-English breakdown of which clauses apply once your product crosses the small-business threshold.',
+      link: 'https://example.com/eu-ai-act-2026',
+      author: 'AI Policy Weekly',
+      daysAgo: 4,
+    },
+    {
+      sourceIdx: 2,
+      title: 'Hacker News: Building a build-in-public bot from scratch',
+      snippet:
+        'Author shares the full architecture: webhook → BullMQ → Ollama → image render, ~600 LOC backend.',
+      link: 'https://news.ycombinator.com/item?id=99999998',
+      author: 'hn:builderdev',
+      daysAgo: 5,
+    },
+  ];
+  // The first one is "USED" — corresponds to the demo News post below.
+  return seed.map((s, i) => {
+    const src = sources[s.sourceIdx];
+    return {
+      id: i === 0 ? 'demo-news-item-headline' : `demo-news-item-${i}`,
+      userId: 'demo-user-1',
+      sourceId: src.id,
+      externalId: `demo-${i}`,
+      kind: src.kind,
+      sourceName: src.name,
+      title: s.title,
+      link: s.link,
+      author: s.author,
+      snippet: s.snippet,
+      contentHtml: null,
+      publishedAt: nowIso(-s.daysAgo),
+      status: i === 0 ? 'USED' : 'NEW',
+      raw: null,
+      createdAt: nowIso(-s.daysAgo),
+    };
+  });
+}
+
+function buildDemoNewsPost(items: NewsItem[]): Post {
+  const headline = items[0]?.title || 'AI news today';
+  const content =
+    `${headline}\n\n` +
+    `Open weights keep getting closer to closed-model quality. The interesting part is not the benchmark, ` +
+    `it is the cost curve: a single 4060 box can now run pipelines that would have needed a paid API a year ago.\n\n` +
+    `For solo devs that means one thing — your throughput is no longer bottlenecked by your wallet. It is ` +
+    `bottlenecked by how fast you can wire the pieces together.`;
+  return {
+    id: DEMO_NEWS_POST_ID,
+    userId: 'demo-user-1',
+    projectId: null,
+    kind: 'NEWS',
+    title: headline.slice(0, 200),
+    content: appendSignature(content, DEFAULT_SIGNATURE),
+    summary:
+      '1. Editorial angle: open-source LLMs are closing the cost-to-quality gap again.\n' +
+      '2. Key facts:\n' +
+      '   - New community models match frontier benchmarks at fractions of the cost.\n' +
+      '   - Solo devs report 3x throughput on local Ollama + ComfyUI rigs.\n' +
+      '   - Qwen 3 small models punch above their weight on consumer GPUs.\n' +
+      '3. Why it matters: cost-per-token collapses, indie throughput climbs.\n' +
+      '4. Hook: your throughput is no longer bottlenecked by your wallet.',
+    platform: 'GENERIC',
+    status: 'DRAFT',
+    scheduledFor: null,
+    publishedAt: null,
+    commitShas: [],
+    newsItemIds: [items[0]?.id].filter(Boolean) as string[],
+    rangeFrom: null,
+    rangeTo: null,
+    metadata: {
+      generated: true,
+      demo: true,
+      source: 'ai-news',
+      model: 'qwen2.5-coder + qwen3',
+      sources: items.slice(0, 1).map((i) => ({
+        id: i.id,
+        title: i.title,
+        link: i.link,
+        sourceName: i.sourceName,
+      })),
+    },
+    createdAt: nowIso(0),
+    updatedAt: nowIso(0),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -924,6 +1129,138 @@ export async function handleDemoRequest(rawPath: string, init: RequestInit = {})
       notify('Demo: image deleted (local only).');
       return delay({ ok: true });
     }
+  }
+
+  // ---- AI News Gen ----
+  if (path === '/api/news/sources' && method === 'GET') {
+    return delay(s.newsSources);
+  }
+  if (path === '/api/news/sources' && method === 'POST') {
+    const body = readBody<Partial<NewsSource> & { kind: NewsSourceKind }>(init) || ({} as any);
+    if (!body.kind) return delay({ message: 'kind required' }, 80);
+    const id = `demo-news-src-${Date.now()}`;
+    const src: NewsSource = {
+      id,
+      userId: 'demo-user-1',
+      kind: body.kind,
+      name:
+        body.name ||
+        (body.kind === 'GOOGLE_NEWS'
+          ? `Google News — ${body.query || 'AI'}`
+          : body.kind === 'REDDIT'
+          ? `Reddit — r/${body.subreddit || ''}`
+          : body.kind === 'CUSTOM'
+          ? 'Custom RSS'
+          : body.kind),
+      url:
+        body.url ||
+        (body.kind === 'REDDIT' && body.subreddit
+          ? `https://www.reddit.com/r/${body.subreddit}/.rss`
+          : body.kind === 'GOOGLE_NEWS'
+          ? `https://news.google.com/rss/search?q=${encodeURIComponent(body.query || 'AI')}`
+          : ''),
+      query: body.query ?? null,
+      subreddit: body.subreddit ?? null,
+      enabled: true,
+      lastFetchedAt: null,
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    };
+    s.newsSources.push(src);
+    notify('Demo: source added locally. Refresh resets the demo workspace.');
+    return delay(src);
+  }
+  const newsSrcMatch = path.match(/^\/api\/news\/sources\/([^/]+)$/);
+  if (newsSrcMatch) {
+    const id = newsSrcMatch[1];
+    const idx = s.newsSources.findIndex((x) => x.id === id);
+    if (idx < 0) return delay({ message: 'not found' }, 80);
+    if (method === 'PATCH') {
+      const body = readBody<Partial<NewsSource>>(init) || {};
+      s.newsSources[idx] = { ...s.newsSources[idx], ...body, updatedAt: nowIso() };
+      return delay(s.newsSources[idx]);
+    }
+    if (method === 'DELETE') {
+      s.newsSources.splice(idx, 1);
+      notify('Demo: source removed locally.');
+      return delay({ ok: true });
+    }
+  }
+  if (path === '/api/news/items' && method === 'GET') {
+    const sourceId = params.get('sourceId');
+    const status = params.get('status');
+    let list = s.newsItems;
+    if (sourceId) list = list.filter((x) => x.sourceId === sourceId);
+    if (status) list = list.filter((x) => x.status === status);
+    return delay([...list].sort((a, b) => ((a.publishedAt || a.createdAt) < (b.publishedAt || b.createdAt) ? 1 : -1)));
+  }
+  const newsDismissMatch = path.match(/^\/api\/news\/items\/([^/]+)\/dismiss$/);
+  if (newsDismissMatch && method === 'PATCH') {
+    const id = newsDismissMatch[1];
+    const idx = s.newsItems.findIndex((x) => x.id === id);
+    if (idx < 0) return delay({ message: 'not found' }, 80);
+    s.newsItems[idx] = { ...s.newsItems[idx], status: 'DISMISSED' };
+    return delay(s.newsItems[idx]);
+  }
+  if (path === '/api/news/refresh' && method === 'POST') {
+    notify('Demo: live RSS fetch is disabled — showing seeded news items.');
+    const result: NewsRefreshResult = {
+      fetched: s.newsItems.length,
+      inserted: 0,
+      errors: [],
+    };
+    // Bump lastFetchedAt to make the UI feel alive.
+    const ids: string[] = readBody<{ sourceIds?: string[] }>(init)?.sourceIds || [];
+    for (const src of s.newsSources) {
+      if (!ids.length || ids.includes(src.id)) src.lastFetchedAt = nowIso();
+    }
+    return delay(result);
+  }
+  if (path === '/api/news/generate' && method === 'POST') {
+    const body = readBody<{ newsItemIds: string[]; platform?: Post['platform']; tone?: string }>(init) || ({} as any);
+    const ids: string[] = body?.newsItemIds || [];
+    const items = s.newsItems.filter((it) => ids.includes(it.id));
+    if (!items.length) return delay({ message: 'no news items' }, 80);
+    const platform = (body.platform || 'GENERIC') as Post['platform'];
+    const headline = items[0].title;
+    const settings = getSettings();
+    const baseContent =
+      `${headline}\n\n` +
+      `Quick read on ${items.length} item${items.length === 1 ? '' : 's'} from ${Array.from(new Set(items.map((i) => i.sourceName))).join(', ')}.\n\n` +
+      `Why it matters for solo devs: cost-per-token keeps dropping, local pipelines keep getting easier, ` +
+      `and the gap between "I have an idea" and "it ships" is now measured in hours, not weeks.`;
+    const id = `demo-news-post-${Date.now()}`;
+    const post: Post = {
+      id,
+      userId: 'demo-user-1',
+      projectId: null,
+      kind: 'NEWS',
+      title: headline.slice(0, 200),
+      content: settings.signatureEnabled ? appendSignature(baseContent, settings.signature) : baseContent,
+      summary:
+        '- Coder model condensed the headlines into a brief\n- Chat model rewrote it as a ' + platform.toLowerCase() + ' post\n- Demo data only — no real Ollama or ComfyUI call was made',
+      platform,
+      status: 'DRAFT',
+      scheduledFor: null,
+      publishedAt: null,
+      commitShas: [],
+      newsItemIds: ids,
+      rangeFrom: null,
+      rangeTo: null,
+      metadata: {
+        generated: true,
+        demo: true,
+        source: 'ai-news',
+        sources: items.map((i) => ({ id: i.id, title: i.title, link: i.link, sourceName: i.sourceName })),
+      },
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    };
+    s.posts.unshift(post);
+    // Mark as used for visual feedback.
+    for (const it of items) it.status = 'USED';
+    notify('Demo: news post generated locally. Refresh resets the demo workspace.');
+    return delay(post);
   }
 
   // Fallback

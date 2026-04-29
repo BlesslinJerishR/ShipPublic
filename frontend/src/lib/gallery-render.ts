@@ -184,6 +184,19 @@ export function scaleSpec(spec: RenderSpec, scale: number): RenderSpec {
 export interface RenderOptions {
   /** Render at scale × the spec's native pixel size. Defaults to 1 (preview). */
   scale?: number;
+  /**
+   * Optional foreground image composited above the background but below the
+   * text. Used by the demo workspace to embed a hero asset (e.g. the Iron Man
+   * reference) onto the standard build-in-public background.
+   *
+   * Sized to fit the inner safe area defined by the spec margins, anchored
+   * to the right edge so post text on the left remains readable.
+   */
+  foregroundUrl?: string | null;
+  /** Width of the foreground as a fraction of the canvas width (0.1–1). */
+  foregroundWidthPct?: number;
+  /** Horizontal anchor of the foreground. Defaults to 'right'. */
+  foregroundAnchor?: 'left' | 'center' | 'right';
 }
 
 /** Draw the spec to a canvas. Returns the canvas (caller can extract a blob). */
@@ -241,6 +254,34 @@ export async function renderToCanvas(
       ctx.drawImage(img, sxBox, syBox, swBox, shBox, dx, dy, dw, dh);
     } catch {
       /* swallow — fill remains visible */
+    }
+  }
+
+  // Optional foreground image (e.g. demo hero asset). Drawn after the
+  // background but before the text so post copy reads on top.
+  if (opts.foregroundUrl) {
+    try {
+      const fg = await loadImage(opts.foregroundUrl);
+      const widthPct = Math.max(0.1, Math.min(1, opts.foregroundWidthPct ?? 0.55));
+      const targetW = spec.width * widthPct;
+      const aspect = fg.naturalWidth / Math.max(1, fg.naturalHeight);
+      const targetH = targetW / aspect;
+      // Vertical: anchor near the bottom safe area so the post text up top
+      // stays clear, matching the demo composition the user supplied.
+      const mb = (spec.marginBottomPct / 100) * spec.height;
+      const yTop = Math.max(spec.height * 0.35, spec.height - mb - targetH);
+      let xLeft: number;
+      const anchor = opts.foregroundAnchor || 'right';
+      if (anchor === 'left') {
+        xLeft = (spec.marginLeftPct / 100) * spec.width;
+      } else if (anchor === 'center') {
+        xLeft = (spec.width - targetW) / 2;
+      } else {
+        xLeft = spec.width - (spec.marginRightPct / 100) * spec.width - targetW;
+      }
+      ctx.drawImage(fg, xLeft, yTop, targetW, targetH);
+    } catch {
+      /* foreground is best-effort; ignore */
     }
   }
 

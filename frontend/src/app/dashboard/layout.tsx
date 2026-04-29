@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Sparkles,
   ImageIcon,
+  Newspaper,
   LogOut,
   Sun,
   Moon,
@@ -105,6 +106,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/posts') ? styles.navActive : ''}`} href="/dashboard/posts">
             <Sparkles size={16} /> Posts
+          </Link>
+          <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/news') ? styles.navActive : ''}`} href="/dashboard/news">
+            <Newspaper size={16} /> AI News Gen
           </Link>
           <Link prefetch={false} className={`${styles.navItem} ${isActive('/dashboard/gallery') ? styles.navActive : ''}`} href="/dashboard/gallery">
             <ImageIcon size={16} /> Gallery

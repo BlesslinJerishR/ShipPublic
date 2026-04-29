@@ -1,0 +1,4 @@
+RUN - POST BACKEND SETUP
+
+cd backend && npx prisma db push
+
