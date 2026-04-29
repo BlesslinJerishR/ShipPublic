@@ -113,7 +113,7 @@ function LoginInner() {
 
           <button type="submit" className={styles.cta} disabled={submitting}>
             {submitting ? 'Entering demo' : autoCountdown !== null && autoCountdown > 0
-              ? `Auto Login in ${autoCountdown}`
+              ? `Auto Login in ${autoCountdown} secs`
               : 'Enter Demo Workspace'}
             <ArrowRight size={16} />
           </button>

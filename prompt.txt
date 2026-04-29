@@ -329,3 +329,17 @@ make no mistakes. It should work end to end. implement end to end. implement bot
 
 2. Implement a default image and default post for Demo Data too. Use the existing current background image (Black background with git commits in footer) as the post image + add demo ai text and add the image asset. I have added the asset to be embed in the existing image in the chat, add demo text too
 
+1. Pipeline: RSS fetch → dedup → Ollama coder summary → Ollama chat polish → optional ComfyUI background → gallery render. Default sources (Google News AI, TechCrunch, HN, Reddit r/Artificial) lazy-seed per user.
+
+Why this flow ? we no need "Ollama coder summary" for this ai news flow right ? fix
+
+2. Don't add the asset image in the same post with current background image and add asset in the same image wrong. 
+Generate image and keep it seperately as the second page in the gallery/post.
+
+Flow
+
+Ai Generated Build in public post -> Add the text in given bg image + Ai Image in second page
+Ai news generated post ->   Add the text in given bg image + Ai Image in second page
+
+3. In /dashboard/news
+Sources cards Ui/Ux is not right. Fix. Ui Bug screenshot attached

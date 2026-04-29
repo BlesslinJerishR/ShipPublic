@@ -95,11 +95,14 @@ export class GalleryService implements OnModuleInit {
   // -------------------------------------------------------------------------
 
   async getSettings(userId: string) {
-    let s = await this.prisma.gallerySettings.findUnique({ where: { userId } });
-    if (!s) {
-      s = await this.prisma.gallerySettings.create({ data: { userId } });
-    }
-    return s;
+    // Atomic find-or-create. The previous find-then-create flow let two
+    // concurrent first requests both miss and then race on the unique
+    // (userId) constraint, surfacing as a 500 to the second caller.
+    return this.prisma.gallerySettings.upsert({
+      where: { userId },
+      update: {},
+      create: { userId },
+    });
   }
 
   async updateSettings(

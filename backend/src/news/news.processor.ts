@@ -66,28 +66,29 @@ export class NewsProcessor extends WorkerHost {
       );
       const content = await this.ollama.polishToNewsPost(summary, platform, tone);
 
-      // Mark source items as USED.
-      await this.prisma.newsItem.updateMany({
-        where: { id: { in: items.map((i) => i.id) } },
-        data: { status: 'USED' },
-      });
-
-      // Update post body before kicking off image render so the UI shows
-      // text immediately even if the image step takes longer.
-      await this.prisma.post.update({
-        where: { id: postId },
-        data: {
-          content: content.trim(),
-          summary,
-          metadata: {
-            tone,
-            generating: false,
-            completedAt: new Date().toISOString(),
-            source: 'ai-news',
-            sources: items.map((i) => ({ id: i.id, title: i.title, link: i.link, sourceName: i.sourceName })),
+      // Mark source items as USED + update post body atomically so a partial
+      // failure between the two writes can never leave the UI showing
+      // "generating…" forever with the news items already consumed.
+      await this.prisma.$transaction([
+        this.prisma.newsItem.updateMany({
+          where: { id: { in: items.map((i) => i.id) } },
+          data: { status: 'USED' },
+        }),
+        this.prisma.post.update({
+          where: { id: postId },
+          data: {
+            content: content.trim(),
+            summary,
+            metadata: {
+              tone,
+              generating: false,
+              completedAt: new Date().toISOString(),
+              source: 'ai-news',
+              sources: items.map((i) => ({ id: i.id, title: i.title, link: i.link, sourceName: i.sourceName })),
+            },
           },
-        },
-      });
+        }),
+      ]);
 
       // Image step. Ordered preference:
       //  1. Caller-supplied assetId

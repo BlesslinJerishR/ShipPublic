@@ -79,14 +79,16 @@ export class NewsService {
     });
     if (existing.length) return existing;
     // Lazily seed the four free defaults the first time a user opens the
-    // module so the page is useful with zero configuration.
-    for (const def of DEFAULT_SOURCES) {
-      try {
-        await this.createSource(userId, def);
-      } catch (e: any) {
-        this.logger.warn(`failed to seed default source ${def.name}: ${e?.message}`);
-      }
-    }
+    // module so the page is useful with zero configuration. Run in parallel
+    // — sources are independent and the prior serial loop forced N
+    // round-trips on first open.
+    await Promise.allSettled(
+      DEFAULT_SOURCES.map((def) =>
+        this.createSource(userId, def).catch((e) => {
+          this.logger.warn(`failed to seed default source ${def.name}: ${e?.message}`);
+        }),
+      ),
+    );
     return this.prisma.newsSource.findMany({
       where: { userId },
       orderBy: { createdAt: 'asc' },
