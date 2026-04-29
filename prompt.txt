@@ -208,3 +208,121 @@ make no mistakes. It should work end to end. implement end to end. implement bot
 make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly. make it as an enterprise grade level application. Implement
 
 in shipublic landing page "GitHub OAuth" section card - the icon inside the card is not showing/rendering. fix
+
+1. I am building a free opensource build in public post generation both text and image generation. It reads my git and file diffs, code and then pass it to opensource ollama qwen coder and then pass it to Qwen 3 for post generation. I have already build it now i want auto ai news generation post ai text and ai gen Image background or add in the post image.
+
+The real pro move (what you should actually do)
+
+APIs are not truly “free at scale”.
+
+So i want a real free + scalable system, do this instead:
+
+- Hybrid approach (recommended architecture)
+- Step 1: Use RSS feeds (100% free, unlimited)
+
+Pull from:
+
+Google News RSS
+TechCrunch RSS
+Hacker News
+Reddit (r/Artificial, r/MachineLearning) (I should be able to add the reddit r/GROUPNAME manually. have a module/config for that)
+
+Have all the 4 options as a select checkbox for process and have a seperate boxes of fetched new same like our existing git commit boxes post generate button/boxes. So i can check the news and if interested i can generate the image and embed text on it.
+
+
+
+Example:
+
+https://news.google.com/rss/search?q=AI
+
+- No API key
+- No limits
+- Fully free forever
+
+- Step 2: Parse + deduplicate
+
+Use:
+
+Node.js → rss-parser
+or
+Python → feedparser
+
+- Step 3: Summarize with your existing stack
+
+we already have:
+
+Ollama = Qwen coder + Qwen 3
+
+So pipeline becomes:
+
+RSS → Extract headlines → Fetch article → Summarize → Generate post
+
+- Step 4: Generate images (FREE)
+
+Here are your real free options:
+
+- Local (best)
+Stable Diffusion via ComfyUI
+
+Final verdict for YOU
+- Use ComfyUI as your main engine
+
+Because:
+
+You’re already building automation systems
+You’re using Ollama + pipelines
+You want zero-cost scalable generation
+You only have 8GB VRAM (needs efficiency)
+
+- ComfyUI fits like a glove 🧤
+
+- What I would do (exact setup)
+- Setup combo:
+ComfyUI
+SDXL / SD 1.5 models
+ControlNet nodes
+Image save + naming automation
+
+-Pipeline:
+
+AI news text → prompt generator → ComfyUI workflow → image → auto save → ready for review and manual post
+
+What you can do fully free
+
+With ComfyUI locally, you can:
+
+Generate AI news images
+Batch generate (100s of images)
+Build pipelines (auto prompt → image → save)
+Run offline (no internet needed after setup)
+Integrate with your Git → AI → post system
+
+- This is exactly what your project needs.
+
+- Fully free, runs on your RTX 4060
+
+- Step 5: Style it like a “build in public” post
+
+Extra spicy idea (this could blow up your project)
+
+Add a twist:
+
+- “Explain AI news like a solo developer” (build your own good prompt)
+
+One upgrade idea (this will level up your system)
+
+Make your pipeline:
+
+AI news → prompt generator → ComfyUI → image → auto watermark → post
+
+
+- My theme color is only
+
+#1D1E21 - Black Background color
+#FFFFFF - white color for text
+#FF004F - Hero Primary color for heading , title and important keyword marking in the post image
+
+make no mistakes. It should work end to end. implement end to end. implement both the frontend and backend. improvise as much as needed. improvise accordingly on your own. make it as an enterprise grade level application. Implement
+
+2. Implement a default image and default post for Demo Data too. Use the existing current background image (Black background with git commits in footer) as the post image + add demo ai text and add the image asset. I have added the asset to be embed in the existing image in the chat, add demo text too
+
