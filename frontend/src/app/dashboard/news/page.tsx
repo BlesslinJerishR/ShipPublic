@@ -386,6 +386,7 @@ export default function NewsPage() {
                 >
                   <input
                     type="checkbox"
+                    className="redCheck"
                     checked={enabledSources.has(s.id)}
                     onChange={() => toggleSource(s.id)}
                   />

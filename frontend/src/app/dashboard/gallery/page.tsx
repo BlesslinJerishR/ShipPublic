@@ -24,6 +24,7 @@ import {
   Star,
   StarOff,
   Download,
+  FileArchive,
   Image as ImageIcon,
   Pencil,
   RefreshCw,
@@ -33,6 +34,7 @@ import { Select } from '@/components/Select';
 import { api } from '@/lib/api';
 import { useApi, invalidate } from '@/lib/useApi';
 import { downloadDataUrl } from '@/lib/gallery-render';
+import { downloadPostZip, downloadBundleZip } from '@/lib/gallery-bundle';
 import { FONT_FAMILIES, RATIOS } from '@/lib/gallery-ratios';
 import type {
   GalleryAsset,
@@ -197,6 +199,30 @@ export default function GalleryPage() {
       alert('Could not download image.');
     }
   }, []);
+
+  const downloadGroupZip = useCallback(
+    async (post: Post | null) => {
+      if (!post) return;
+      try {
+        await downloadPostZip(post);
+      } catch (e: any) {
+        alert(e?.message || 'Could not build ZIP');
+      }
+    },
+    [],
+  );
+
+  const downloadAllZip = useCallback(async () => {
+    if (!posts.length) {
+      alert('No posts yet.');
+      return;
+    }
+    try {
+      await downloadBundleZip(posts);
+    } catch (e: any) {
+      alert(e?.message || 'Could not build bundle');
+    }
+  }, [posts]);
 
   const previewSrc = useCallback((img: GalleryImage) => {
     if (img.dataUrl) return img.dataUrl;
@@ -425,9 +451,18 @@ export default function GalleryPage() {
       <Card
         title="Generated images"
         action={
-          <Link prefetch={false} href="/dashboard/posts">
-            <button>Browse posts</button>
-          </Link>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={downloadAllZip}
+              disabled={!images.length}
+              title="Download every post's pages, grouped by post, as one ZIP"
+            >
+              <FileArchive size={14} /> Download all as ZIP
+            </button>
+            <Link prefetch={false} href="/dashboard/posts">
+              <button>Browse posts</button>
+            </Link>
+          </div>
         }
       >
         {images.length === 0 && (
@@ -512,6 +547,14 @@ export default function GalleryPage() {
                         style={g.ai ? { opacity: 0.7 } : undefined}
                       >
                         <Download size={14} />
+                      </button>
+                    )}
+                    {post && (g.ai || g.bg) && (
+                      <button
+                        onClick={() => downloadGroupZip(post)}
+                        title="Download both pages (AI image + text page) as ZIP"
+                      >
+                        <FileArchive size={14} />
                       </button>
                     )}
                     <button

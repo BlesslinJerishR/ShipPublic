@@ -377,3 +377,14 @@ make no mistakes. It should work end to end. implement end to end. implement bot
 It should say Hire blessl.in for $3000 USD
 
 Same white background with theme #FF004F red color texts
+
+1. in /dashboard/news
+the sources card Ui/Ux is messed up. fix, screenshot attached
+
+2. where is download as zip option if not implement. it should download both the Ai generated image + text in BG embed image
+Now everywhere only the default ironman image only visible
+
+Flow
+
+Ai Generated Build in public post -> Ai gen Image + Add the text in given bg image in second page
+Ai news generated post ->   Ai Image + Add the text in given bg image in second page

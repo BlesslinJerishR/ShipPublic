@@ -15,6 +15,8 @@ import {
   Pencil,
   Sparkles,
   Download,
+  FileArchive,
+  FileText,
   Image as ImageIcon,
   Settings as SettingsIcon,
 } from 'lucide-react';
@@ -29,6 +31,7 @@ import {
   type UserSettings,
 } from '@/lib/settings';
 import { downloadDataUrl } from '@/lib/gallery-render';
+import { downloadPostZip, downloadPostPdf } from '@/lib/gallery-bundle';
 import type { GalleryImage, Post } from '@/lib/types';
 import styles from './post.module.css';
 
@@ -156,6 +159,24 @@ export default function PostDetail() {
       setImageBusy(false);
     }
   }, [id]);
+
+  const downloadZip = useCallback(async () => {
+    if (!post) return;
+    try {
+      await downloadPostZip(post);
+    } catch (e: any) {
+      alert(e?.message || 'Could not build ZIP');
+    }
+  }, [post]);
+
+  const downloadPdf = useCallback(async () => {
+    if (!post) return;
+    try {
+      await downloadPostPdf(post);
+    } catch (e: any) {
+      alert(e?.message || 'Could not build PDF');
+    }
+  }, [post]);
 
   const downloadImage = useCallback(async () => {
     if (!image) return;
@@ -315,6 +336,22 @@ export default function PostDetail() {
               >
                 <Pencil size={14} /> Edit
               </Link>
+            </div>
+            <div className={styles.row} style={{ marginTop: 8 }}>
+              <button
+                onClick={downloadZip}
+                disabled={!image && !aiImage}
+                title="Download both pages (AI image + text-on-bg) as a ZIP"
+              >
+                <FileArchive size={14} /> Download ZIP
+              </button>
+              <button
+                onClick={downloadPdf}
+                disabled={!image && !aiImage}
+                title="Download both pages as a single PDF"
+              >
+                <FileText size={14} /> Download PDF
+              </button>
             </div>
             {image && (
               <div className={styles.imageMetaBar}>

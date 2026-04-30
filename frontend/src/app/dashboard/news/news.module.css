@@ -60,7 +60,15 @@
   min-width: 0;
 }
 .sourceCheckRow:hover { border-color: rgba(var(--fgRgb), 0.25); }
-.sourceCheckRow input { accent-color: var(--hero); flex-shrink: 0; }
+.sourceCheckRow input[type="checkbox"] {
+  /* Defensive override against the global `input` rule which otherwise
+     stretches checkboxes to 100% width and adds padding, hiding the row
+     content behind a giant red square. */
+  width: 16px; height: 16px;
+  padding: 0; margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--hero);
+}
 .sourceCheckRow .sourceBody {
   flex: 1; min-width: 0;
   display: flex; flex-direction: column; gap: 2px;
