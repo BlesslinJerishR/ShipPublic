@@ -1,5 +1,10 @@
 :root {
   --hero: #FF004F;
+  --hire-banner-height: 40px;
+}
+
+@media (max-width: 600px) {
+  :root { --hire-banner-height: 56px; }
 }
 
 html[data-theme="dark"] {
@@ -26,6 +31,10 @@ html, body {
   line-height: 1.5;
   min-height: 100vh;
   transition: background 0.18s ease, color 0.18s ease;
+}
+
+body {
+  padding-top: var(--hire-banner-height, 40px);
 }
 
 * { box-sizing: border-box; }

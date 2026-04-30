@@ -1,15 +1,15 @@
 .shell {
   display: grid;
   grid-template-columns: 260px 1fr;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--hire-banner-height, 0px));
 }
 
 .side {
   border-right: 1px solid rgba(var(--fgRgb), 0.10);
   padding: 20px 14px;
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: var(--hire-banner-height, 0px);
+  height: calc(100vh - var(--hire-banner-height, 0px));
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -115,7 +115,7 @@
   padding: 14px 24px;
   border-bottom: 1px solid rgba(var(--fgRgb), 0.10);
   position: sticky;
-  top: 0;
+  top: var(--hire-banner-height, 0px);
   background: var(--bg);
   z-index: 5;
   gap: 12px;
@@ -173,6 +173,7 @@
   -webkit-backdrop-filter: blur(2px);
   z-index: 39;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.22s ease;
 }
 
@@ -183,10 +184,10 @@
 
   .side {
     position: fixed;
-    top: 0;
+    top: var(--hire-banner-height, 0px);
     left: 0;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - var(--hire-banner-height, 0px));
+    height: calc(100dvh - var(--hire-banner-height, 0px));
     width: min(86vw, 320px);
     border-right: 1px solid rgba(var(--fgRgb), 0.10);
     border-bottom: 0;
@@ -200,7 +201,7 @@
     box-shadow: 24px 0 60px rgba(0, 0, 0, 0.35);
   }
   .backdrop { display: block; }
-  .backdropVisible { opacity: 1; }
+  .backdropVisible { opacity: 1; pointer-events: auto; }
 
   .topbar { padding: 12px 16px; }
   .content { padding: 16px; }

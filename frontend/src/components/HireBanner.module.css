@@ -1,0 +1,36 @@
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 10px 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #ffffff;
+  color: #000000;
+  border-bottom: 1px solid #e0e0e0;
+  min-height: var(--hire-banner-height, 40px);
+  line-height: 1.4;
+}
+
+.banner :global(a),
+.banner a {
+  color: #FF004F;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.banner a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .banner {
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+}

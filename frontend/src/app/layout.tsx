@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/lib/theme';
+import HireBanner from '@/components/HireBanner';
 
 export const metadata: Metadata = {
   title: 'Shipublic',
@@ -22,7 +23,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <HireBanner />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
