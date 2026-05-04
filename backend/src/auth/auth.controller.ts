@@ -44,7 +44,7 @@ export class AuthController {
     url.searchParams.set('redirect_uri', this.callbackUrl);
     url.searchParams.set('scope', scopes);
     url.searchParams.set('allow_signup', 'true');
-    return res.redirect(url.toString());
+    return res.code(302).header('location', url.toString()).send();
   }
 
   @Get('github/callback')
@@ -107,7 +107,7 @@ export class AuthController {
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    return res.redirect(`${this.frontendUrl}/dashboard`);
+    return res.code(302).header('location', `${this.frontendUrl}/dashboard`).send();
   }
 
   @UseGuards(JwtAuthGuard)

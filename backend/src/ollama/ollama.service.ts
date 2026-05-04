@@ -40,18 +40,30 @@ export class OllamaService {
   }
 
   private async generate(model: string, prompt: string, system?: string): Promise<string> {
-    const { data } = await axios.post(
-      `${this.baseUrl}/api/generate`,
-      {
-        model,
-        prompt,
-        system,
-        stream: false,
-        options: { temperature: 0.4, num_ctx: 8192 },
-      },
-      { timeout: 1000 * 60 * 10 },
-    );
-    return String(data?.response ?? '').trim();
+    try {
+      const { data } = await axios.post(
+        `${this.baseUrl}/api/generate`,
+        {
+          model,
+          prompt,
+          system,
+          stream: false,
+          options: { temperature: 0.4, num_ctx: 8192 },
+        },
+        { timeout: 1000 * 60 * 10 },
+      );
+      return String(data?.response ?? '').trim();
+    } catch (err: any) {
+      // Ollama returns 404 when the requested model is not pulled. Surface a
+      // clearer message so the user knows to run `ollama pull <model>`.
+      if (err?.response?.status === 404) {
+        const detail = err?.response?.data?.error || `model "${model}" not found`;
+        throw new Error(
+          `Ollama: ${detail}. Pull it with: ollama pull ${model}`,
+        );
+      }
+      throw err;
+    }
   }
 
   async summarizeCommits(commits: CommitInput[]): Promise<string> {

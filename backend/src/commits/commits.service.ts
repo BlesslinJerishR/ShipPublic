@@ -129,7 +129,15 @@ export class CommitsService {
       where: { projectId_sha: { projectId: project.id, sha } },
     });
     if (existing && existing.diffPreview) return existing;
-    const detail = await this.github.getCommitDetail(user.accessToken, project.owner, project.name, sha);
+    let detail: Awaited<ReturnType<typeof this.github.getCommitDetail>>;
+    try {
+      detail = await this.github.getCommitDetail(user.accessToken, project.owner, project.name, sha);
+    } catch (err: any) {
+      // GitHub returns 404 when the SHA no longer exists (force-push, rebase, etc.).
+      // Fall back to whatever is already stored so post generation can proceed.
+      if (err?.status === 404 && existing) return existing;
+      throw err;
+    }
     return this.prisma.commit.upsert({
       where: { projectId_sha: { projectId: project.id, sha: detail.sha } },
       create: {

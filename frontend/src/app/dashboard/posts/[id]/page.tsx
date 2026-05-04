@@ -137,8 +137,12 @@ export default function PostDetail() {
 
   const remove = async () => {
     if (!confirm('Delete this post?')) return;
-    await api.posts.remove(id);
-    router.push('/dashboard/posts');
+    try {
+      await api.posts.remove(id);
+      router.push('/dashboard/posts');
+    } catch (err: any) {
+      alert(err?.body?.message || err?.message || 'Failed to delete post');
+    }
   };
 
   const copy = async () => {

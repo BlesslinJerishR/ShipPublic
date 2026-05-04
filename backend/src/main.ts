@@ -92,6 +92,7 @@ async function bootstrap() {
   await app.register(fastifyCors as any, {
     origin: [frontendUrl],
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     // Cache the preflight result on the browser so subsequent same-origin
     // sub-requests skip the OPTIONS round-trip.
     maxAge: 86400,

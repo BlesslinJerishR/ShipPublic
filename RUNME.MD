@@ -6,3 +6,5 @@ or
 yarn && yarn dev
 run ./start.sh to start everything:
 Use --no-infra if you want to skip Docker (e.g. infra already running)
+
+sudo systemctl restart ollama
